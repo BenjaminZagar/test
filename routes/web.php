@@ -5,6 +5,7 @@ use PharIo\Manifest\Author;
 use Illuminate\Http\Request;
 use jcobhams\NewsApi\NewsApi;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
