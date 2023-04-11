@@ -68,7 +68,7 @@ return [
             'url' => env('DATABASE_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'example'),
+            'database' => env('DB_DATABASE', 'test'),
             'username' => env('DB_USERNAME', 'sail'),
             'password' => env('DB_PASSWORD', 'password'),
             'charset' => 'utf8',

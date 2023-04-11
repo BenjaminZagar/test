@@ -174,8 +174,38 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
+Route::get('/dashboard', function (Request $request) {
+    extract($request->all());
+    $page=null;
+    $q=null;
+    $perPage=2;
+    $category=null;
+    
+    if(extract($request->all())){    
+        $page = (int)$page;
+        $q = $q;
+        $category = $category;
+    }
+    else{
+        $page=null;
+        $q=null;
+        $category=null;
+    }
+    $your_api_key='5d3f7a63232944ecb667668cd827ae18';
+    $newsapi = new NewsApi($your_api_key);
+    $categoriesAll=$newsapi->getCategories();
+    /* $newsEverything=$newsapi->getEverything('bitcoin', null, null, null, null, null, null, null, 5, null); */
+    $newsTop=$newsapi->getTopHeadlines($q, null, 'us', $category, $perPage, $page);
+    $numberOfPages=$newsTop->totalResults/$perPage;
+    $numberOfPages=ceil($numberOfPages);
+    return view('dashboard', [
+        'newsTop'=>$newsTop->articles,
+        'q'=>$q,
+        'category'=>$category,
+        'categoriesAll'=>$categoriesAll,
+        'numberOfPages'=>$numberOfPages
+        /* 'newsEverything'=>$newsEverything->articles */
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
