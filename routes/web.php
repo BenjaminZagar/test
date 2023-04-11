@@ -29,15 +29,15 @@ Route::get('/Top', function () {
     /* ALL PARAMETERS FOR GET TopHeadlines FUNCTION:
         * $q : Keywords or a phrase to search for.
 
-        * $sources: A comma-seperated string of identifiers for the news sources or blogs you want headlines from. 
-            Use the getSources() method to locate these programmatically or look at the sources index. 
+        * $sources: A comma-seperated string of identifiers for the news sources or blogs you want headlines from.
+            Use the getSources() method to locate these programmatically or look at the sources index.
             Note: you can't mix this param with the country or category params.
-            
-        * $country: The 2-letter ISO 3166-1 code of the country you want to get headlines for. 
-            Use the getCountries() method to locate these programmatically. 
+
+        * $country: The 2-letter ISO 3166-1 code of the country you want to get headlines for.
+            Use the getCountries() method to locate these programmatically.
             Note: you can't mix this param with the sources param.
-            
-        * $category: The category you want to get headlines for. Use the getCategories() method to locate these programmatically. 
+
+        * $category: The category you want to get headlines for. Use the getCategories() method to locate these programmatically.
              Note: you can't mix this param with the sources param.
 
         * $page_size: The number of results to return per page (request). 20 is the default, 100 is the maximum.
@@ -51,7 +51,7 @@ Route::get('/Top', function () {
         $page_size=10;
         $page=null;
         $language=null;
-    
+
     /* TO SEE WHAT PARAMETERS ARE AVALIABLE: GET ALL AVALIABLE PARAMETERS: */
         /* Returns an array of allowed categories */
         $categories_All=$newsapi->getCategories();
@@ -94,21 +94,21 @@ Route::get('/everything', function () {
         $newsapi = new NewsApi($your_api_key);
 
     /* ALL PARAMETERS FOR GET Everything FUNCTION:
-    
+
         * $domains: A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com, engadget.com) to restrict the search to.
 
         * $exclude_domains: A comma-seperated string of domains (eg bbc.co.uk, techcrunch.com, engadget.com) to remove from the results.
 
-        * $from: A date and optional time for the oldest article allowed. 
-            This should be in ISO 8601 format (e.g. 2018-11-16 or 2018-11-16T16:19:03) 
+        * $from: A date and optional time for the oldest article allowed.
+            This should be in ISO 8601 format (e.g. 2018-11-16 or 2018-11-16T16:19:03)
             Default: the oldest according to your plan.
 
-        * $to: A date and optional time for the newest article allowed. 
-            This should be in ISO 8601 format (e.g. 2018-11-16 or 2018-11-16T16:19:03) 
+        * $to: A date and optional time for the newest article allowed.
+            This should be in ISO 8601 format (e.g. 2018-11-16 or 2018-11-16T16:19:03)
             Default: the newest according to your plan.
 
-        * $language: The 2-letter ISO-639-1 code of the language you want to get headlines for. 
-             Possible options: ar de en es fr he it nl no pt ru se ud zh . 
+        * $language: The 2-letter ISO-639-1 code of the language you want to get headlines for.
+             Possible options: ar de en es fr he it nl no pt ru se ud zh .
              Default: all languages returned. Use the getLanguages() method to locate these programmatically.
 
         * $sort_by: The order to sort the articles in. Use the getSortBy() method to locate these programmatically. */
@@ -125,14 +125,14 @@ Route::get('/everything', function () {
         $language=null;
         $country='us';
         $category='business';
-    
+
     /* TO SEE WHAT PARAMETERS ARE AVALIABLE: GET ALL AVALIABLE PARAMETERS: */
         /* Returns an array of allowed categories: */
         $categories_All=$newsapi->getCategories();
 
         /* Returns JSON object is successful or throws excpetions if invalid data or unsuccessful request. */
         $sources_All=$newsapi->getSources($category, $language, $country);
-    
+
         /* Returns an array of allowed languages */
         $languages_All=$newsapi->getLanguages();
 
@@ -142,7 +142,7 @@ Route::get('/everything', function () {
     /*TO GET DATA:
         /* Returns JSON object is successful or throws excpetions if invalid data or unsuccessful request: */
         $news=$newsapi->getEverything($q, $sources, $domains, $exclude_domains, $from, $to, $language, $sort_by, $page_size, $page);
-  
+
     dd($news);
     return view('welcome');
 });
@@ -151,7 +151,7 @@ Route::get('/news', function (Request $request) {
 
     extract($request->all());
     $perPage=2;
-    if(extract($request->all())){    
+    if(extract($request->all())){
         $page = (int)$page;
     }
     else{
@@ -180,8 +180,9 @@ Route::get('/dashboard', function (Request $request) {
     $q=null;
     $perPage=2;
     $category=null;
-    
-    if(extract($request->all())){    
+    $country=auth()->user()->news_country;
+
+    if(extract($request->all())){
         $page = (int)$page;
         $q = $q;
         $category = $category;
@@ -191,11 +192,11 @@ Route::get('/dashboard', function (Request $request) {
         $q=null;
         $category=null;
     }
-    $your_api_key='5d3f7a63232944ecb667668cd827ae18';
+    $your_api_key='7eb43fb6057242e8b3614d44f2bd08ee';
     $newsapi = new NewsApi($your_api_key);
     $categoriesAll=$newsapi->getCategories();
     /* $newsEverything=$newsapi->getEverything('bitcoin', null, null, null, null, null, null, null, 5, null); */
-    $newsTop=$newsapi->getTopHeadlines($q, null, 'us', $category, $perPage, $page);
+    $newsTop=$newsapi->getTopHeadlines($q, null, $country, $category, $perPage, $page);
     $numberOfPages=$newsTop->totalResults/$perPage;
     $numberOfPages=ceil($numberOfPages);
     return view('dashboard', [

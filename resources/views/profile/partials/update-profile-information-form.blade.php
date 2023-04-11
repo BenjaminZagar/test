@@ -1,3 +1,4 @@
+@props(['value'])
 <section>
     <header>
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -22,7 +23,6 @@
             <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" required autofocus autocomplete="name" />
             <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
-
         <div>
             <x-input-label for="email" :value="__('Email')" />
             <x-text-input id="email" name="email" type="email" class="mt-1 block w-full" :value="old('email', $user->email)" required autocomplete="username" />
@@ -47,6 +47,15 @@
             @endif
         </div>
 
+        <x-input-label for="email" :value="__('Country')" />
+        
+        <select {{ $attributes->merge(['class' => 'block font-medium text-sm text-gray-700']) }} name="news_country" id="news_country">
+            <option value="none" selected disabled hidden>Select an Option</option>
+         @foreach($allCountryNames as $country)
+          <option value="{{array_search($country, $allCountryNames)}}">{{$country}}</option>
+         @endforeach
+        </select>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 
@@ -61,4 +70,5 @@
             @endif
         </div>
     </form>
+   
 </section>
