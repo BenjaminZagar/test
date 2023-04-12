@@ -37,9 +37,10 @@ class RegisteredUserController extends Controller
         ]);
 
         $formFields['news_country']='us';
+        $formFields['password']=Hash::make($formFields['password']);
         /* dd($formFields); */
         $user = User::create($formFields);
-        
+
 
       /*   $user = User::create([
             'name' => $request->name,

@@ -17,32 +17,32 @@
                         <input type="text" name="q"
                             class="h-14  pl-10 pr-20 rounded-lg z-0 focus:shadow focus:outline-none text-black"
                             placeholder="Search Top headlines..." />
-                       
+
                             <button type="submit" class="h-10 w-20 text-white rounded-lg bg-red-500 hover:bg-red-600">
                                 Search
                             </button>
-                        
+
                 </form>
                 </p>
-                
 
-              
+
+
                 <div class="p-6 text-gray-900 dark:text-gray-100">
                     <h1>-------------------------------------------------------------------------------------------------</h1>
-                    
+
                         @foreach($categoriesAll as $categoryAll)
-                        
+
                         <u> <a href="/dashboard?category={{$categoryAll}}"> {{$categoryAll}} </a></u>
                         @endforeach
-                    
+
                         <h1>---------------------------------------------------------------------------------------------</h1>
 
-                    
-                    
+
+
                     <h1>TOP HEADLINES:</h1>
                     <p>*</p>
                     <p>*</p>
-                    
+
 
 
                     @if(count($newsTop)>0)
@@ -81,6 +81,17 @@
                                     @else
                                 <p>No author</p>
                                 @endif
+                                <form method="POST" action="/dashboard/favourite/create">
+                                @csrf
+                                <input type="hidden" id="title" name="title" value="{{$newTop->title}}">
+                                <input type="hidden" id="url" name="url" value="{{$newTop->url}}">
+                                <input type="hidden" id="author" name="author" value="{{$newTop->author}}">
+                                <input type="hidden" id="description" name="description" value="{{$newTop->description}}">
+                                <input type="hidden" id="image" name="image" value="{{$newTop->urlToImage}}">
+                                <button class="h-10 w-100 text-white rounded-lg bg-red-500 hover:bg-red-600">
+                                    Add to favourites
+                                </button>
+                                </form>
                                 <p>*</p>
                                 <p>*</p>
                                 @endforeach
@@ -96,10 +107,10 @@
                                 @endfor
                                 @endif
 
-                       
 
-                
-                    
+
+
+
                     @endif
                     @else
                     <p>No news found</p>
@@ -149,6 +160,46 @@
                                 <p>*</p>
                                 @endforeach  --}}
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="text-white bg-black dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+
+                <h1>FAVOURITES:</h1>
+                    <p>*</p>
+                    <p>*</p>
+                @foreach ($favourites as $favourite)
+                <img class="h-30 w-30" src="{{$favourite->imageUrl}}" alt="Italian Trulli">
+                @if($favourite->title)
+                    <a href="{{$favourite->url}}">{{$favourite->title}}</a>
+                            @else
+                            <p>No title</p>
+                            @endif
+                            @if($favourite->description)
+                            <p>{{$favourite->description}}<p>
+                                    @else
+                                <p>No description</p>
+                                @endif
+                                @if($favourite->author)
+                                @if(count($authors)==1)
+                                <p>Author: {{$favourite->author}}
+                                <p>
+                                    @else
+                                <p>Authors: {{$favourite->author}}
+                                <p>
+                                    @endif
+                                    @else
+                                <p>No author</p>
+                                @endif
+                                <p>*</p>
+                                <p>*</p>
+
+                @endforeach
+
+
             </div>
         </div>
     </div>

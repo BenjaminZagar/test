@@ -1,6 +1,7 @@
 <?php
 
 use Faker\Guesser\Name;
+use App\Models\Favourite;
 use PharIo\Manifest\Author;
 use Illuminate\Http\Request;
 use jcobhams\NewsApi\NewsApi;
@@ -174,6 +175,17 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::post('/dashboard/favourite/create', function(Request $request){
+    Favourite::create([
+        'title' => $request->title,
+        'url' => $request->url,
+        'author' => $request->author,
+        'description' => $request->description,
+        'imageUrl' => $request->image,
+    ]);
+    return redirect()->back();
+});
+
 Route::get('/dashboard', function (Request $request) {
     extract($request->all());
     $page=null;
@@ -181,6 +193,12 @@ Route::get('/dashboard', function (Request $request) {
     $perPage=2;
     $category=null;
     $country=auth()->user()->news_country;
+
+    $allFavourites=Favourite::all()->toArray();
+    /* dd($allFavourites); */
+
+
+    $favourites=Favourite::all();
 
     if(extract($request->all())){
         $page = (int)$page;
@@ -192,19 +210,31 @@ Route::get('/dashboard', function (Request $request) {
         $q=null;
         $category=null;
     }
-    $your_api_key='7eb43fb6057242e8b3614d44f2bd08ee';
+    $your_api_key='31aabde5da1243ce9e147be782a99d9d';
     $newsapi = new NewsApi($your_api_key);
     $categoriesAll=$newsapi->getCategories();
+    $url = str_replace(['?page=' . $page, '&page=' . $page], '', url()->current());
     /* $newsEverything=$newsapi->getEverything('bitcoin', null, null, null, null, null, null, null, 5, null); */
     $newsTop=$newsapi->getTopHeadlines($q, null, $country, $category, $perPage, $page);
+    $array=[];
+    for($y=0;$y<count($allFavourites);$y++){
+    for($x=0;$x<$perPage;$x++){
+        if($newsTop->articles[$x]->url==$allFavourites[$y]['url']){
+            $array[$allFavourites[$y]['url']]=$newsTop->articles[$x]->url;
+        }}}
+    /* dd($array); */
     $numberOfPages=$newsTop->totalResults/$perPage;
     $numberOfPages=ceil($numberOfPages);
-    return view('dashboard', [
+    return view('dashboard_2', [
         'newsTop'=>$newsTop->articles,
         'q'=>$q,
         'category'=>$category,
         'categoriesAll'=>$categoriesAll,
-        'numberOfPages'=>$numberOfPages
+        'numberOfPages'=>$numberOfPages,
+        'favourites'=>$favourites,
+        'currentPage'=>$page,
+        'url'=>$url,
+        'array'=>$array
         /* 'newsEverything'=>$newsEverything->articles */
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
