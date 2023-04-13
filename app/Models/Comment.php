@@ -6,16 +6,14 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Favourite extends Model
+class Comment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'title',
+
+        'comment_text',
         'url',
-        'author',
-        'description',
-        'imageUrl',
         'user_id'
     ];
 

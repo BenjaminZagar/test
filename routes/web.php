@@ -1,10 +1,13 @@
 <?php
 
+use App\Models\User;
+use App\Models\Comment;
 use Faker\Guesser\Name;
 use App\Models\Favourite;
 use PharIo\Manifest\Author;
 use Illuminate\Http\Request;
 use jcobhams\NewsApi\NewsApi;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 
@@ -175,6 +178,18 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+
+
+
+
+
+
+
+/* -----------------------------------------THIS ARE MAIN ROUTES----------------------------------------------- */
+
+
+/* ADD TO FAVOURITES */
 Route::post('/dashboard/favourite/create', function(Request $request){
     Favourite::create([
         'title' => $request->title,
@@ -182,49 +197,78 @@ Route::post('/dashboard/favourite/create', function(Request $request){
         'author' => $request->author,
         'description' => $request->description,
         'imageUrl' => $request->image,
+        'user_id' => $request->user_id
     ]);
     return redirect()->back();
 });
 
+/* ADD COMMENT */
+Route::post('/dashboard/comments/create', function(Request $request){
+
+    $formFields=$request->validate([
+        'comment_text'=> 'required'
+    ]);
+    $formFields['user_id']=$request->user_id;
+    $formFields['url']=$request->url;
+    Comment::create($formFields);
+    return redirect()->back();
+});
+
+/* DASHBOARD */
+
 Route::get('/dashboard', function (Request $request) {
+
+    /* -----GET ALL THE COMMENTS THAT WILL BE SHOWN ON THE VIEW----- */
+    $comments=Comment::with('user')->get();
+
+    /* -----EXTRACTING THE QUERY PARAMETERS FROM URL----- */
     extract($request->all());
+
+    /* -----INITIALIZING THE QUERY PARAMETERS----- */
     $page=null;
     $q=null;
     $perPage=2;
     $category=null;
     $country=auth()->user()->news_country;
 
-    $allFavourites=Favourite::all()->toArray();
-    /* dd($allFavourites); */
-
-
-    $favourites=Favourite::all();
-
+    /* -----IF THERE ARE QUERY PARAMETERS OVERWRITE INITIAL VALUE WITH VALUE EXTRACTED FROM URL----- */
     if(extract($request->all())){
-        $page = (int)$page;
+        $page = (int)$pageTop;
         $q = $q;
         $category = $category;
     }
-    else{
-        $page=null;
-        $q=null;
-        $category=null;
-    }
+
+    /* -----GET USERS FAVOURITE NEWS THAT WILL BE SHOWN ON THE PAGE----- */
+    $favourites=Favourite::all()->where('user_id', 'like', auth()->user()->id);
+
+
+
+    /* -----API REQUEST WITH NEWSAPI CLIENT----- */
     $your_api_key='31aabde5da1243ce9e147be782a99d9d';
     $newsapi = new NewsApi($your_api_key);
-    $categoriesAll=$newsapi->getCategories();
     $url = str_replace(['?page=' . $page, '&page=' . $page], '', url()->current());
-    /* $newsEverything=$newsapi->getEverything('bitcoin', null, null, null, null, null, null, null, 5, null); */
     $newsTop=$newsapi->getTopHeadlines($q, null, $country, $category, $perPage, $page);
-    $array=[];
+    /* $newsEverything=$newsapi->getEverything('bitcoin', null, null, null, null, null, null, null, 5, null); */
+
+    /* -----API REQUEST TO GET ALL CATEGORIES THAT WILL BE SHOWN ON PAGE----- */
+    $categoriesAll=$newsapi->getCategories();
+
+    /* -----FUNCIONALITY FOR MATCHING URLS FOR FAVOURITES USED TO HIDE THE ADD TO FAVOURITE BUTTON AND SHOW STAR----- */
+    $arrayOfMatchedUrls=[];
+    $allFavourites=Favourite::all()->where('user_id', 'like', auth()->user()->id)->toArray();
     for($y=0;$y<count($allFavourites);$y++){
-    for($x=0;$x<$perPage;$x++){
-        if($newsTop->articles[$x]->url==$allFavourites[$y]['url']){
-            $array[$allFavourites[$y]['url']]=$newsTop->articles[$x]->url;
-        }}}
-    /* dd($array); */
+        for($x=0;$x<$perPage;$x++){
+            if($newsTop->articles[$x]->url==$allFavourites[$y]['url']){
+                $arrayOfMatchedUrls[$allFavourites[$y]['url']]=$newsTop->articles[$x]->url;
+            }
+        }
+    }
+
+    /* -----NUMBER OF PAGES CALCULATION FOR PAGINATION----- */
     $numberOfPages=$newsTop->totalResults/$perPage;
     $numberOfPages=ceil($numberOfPages);
+
+    /* -----RETURNING VIEW WITH ALL VARIABLES NEEDED----- */
     return view('dashboard_2', [
         'newsTop'=>$newsTop->articles,
         'q'=>$q,
@@ -234,7 +278,9 @@ Route::get('/dashboard', function (Request $request) {
         'favourites'=>$favourites,
         'currentPage'=>$page,
         'url'=>$url,
-        'array'=>$array
+        'array'=>$arrayOfMatchedUrls,
+        'favourites'=>$favourites,
+        'comments'=>$comments
         /* 'newsEverything'=>$newsEverything->articles */
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');

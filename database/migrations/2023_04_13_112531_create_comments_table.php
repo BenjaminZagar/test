@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('favourites', function (Blueprint $table) {
+        Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->longText('title');
             $table->foreignid('user_id')->onDelete('cascade');
             $table->longText('url');
-            $table->longText('author')->nullable();
-            $table->longText('description')->nullable();
-            $table->longText('imageUrl')->nullable();
+            $table->longText('comment_text');
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('favourites');
+        Schema::dropIfExists('comments');
     }
 };

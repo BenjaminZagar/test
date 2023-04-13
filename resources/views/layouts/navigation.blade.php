@@ -13,7 +13,7 @@
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('NEWS') }}
+                        {{ __('TOP HEADLINES') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -23,7 +23,13 @@
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <div class="flex flex-row items-center">
-                            <div class="mr-2 text-gray-500">{{ strtoupper(Auth::user()->news_country) }}</div>
+                            <div class="flex flex-row items-center">
+                                <img src="https://flagcdn.com/w20/{{Auth::user()->news_country}}.png"
+                                    srcset="https://flagcdn.com/w40/{{Auth::user()->news_country}}.png 2x"
+                                    width="20"
+                                    class="mr-2">
+                                <div class="text-gray-500 uppercase">{{ strtoupper(Auth::user()->news_country) }}</div>
+                            </div>
                             <div><button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
 
 

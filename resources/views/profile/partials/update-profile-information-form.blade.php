@@ -47,14 +47,15 @@
             @endif
         </div>
 
+        <div>
         <x-input-label for="email" :value="__('Country')" />
-        
-        <select {{ $attributes->merge(['class' => 'block font-medium text-sm text-gray-700']) }} name="news_country" id="news_country">
+        <select {{ $attributes->merge(['class' => 'block font-medium text-sm text-gray-300 bg-gray-900 focus:border-indigo-600 rounded-md shadow-sm border-gray-700']) }} name="news_country" id="news_country">
             <option value="none" selected disabled hidden>Select an Option</option>
-         @foreach($allCountryNames as $country)
-          <option value="{{array_search($country, $allCountryNames)}}">{{$country}}</option>
-         @endforeach
+            @foreach($allCountryNames as $country)
+                <option value="{{array_search($country, $allCountryNames)}}">{{$country}}</option>
+            @endforeach
         </select>
+        </div>
 
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
@@ -70,5 +71,5 @@
             @endif
         </div>
     </form>
-   
+
 </section>
