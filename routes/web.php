@@ -202,6 +202,13 @@ Route::post('/dashboard/favourite/create', function(Request $request){
     return redirect()->back();
 });
 
+/* DELETE FROM FAVOURITES */
+Route::delete('/dashboard/favorites/{id}', function($id){
+    $favorite = Favourite::find($id);
+    $favorite->delete();
+    return redirect()->back();
+});
+
 /* ADD COMMENT */
 Route::post('/dashboard/comments/create', function(Request $request){
 
@@ -214,8 +221,14 @@ Route::post('/dashboard/comments/create', function(Request $request){
     return redirect()->back();
 });
 
-/* DASHBOARD */
+/* DELETE COMMENT */
+Route::delete('/dashboard/comments/{id}', function($id){
+    $comment = Comment::find($id);
+    $comment->delete();
+    return redirect()->back();
+});
 
+/* DASHBOARD */
 Route::get('/dashboard', function (Request $request) {
 
     /* -----GET ALL THE COMMENTS THAT WILL BE SHOWN ON THE VIEW----- */
@@ -226,6 +239,7 @@ Route::get('/dashboard', function (Request $request) {
 
     /* -----INITIALIZING THE QUERY PARAMETERS----- */
     $page=null;
+    $pageTop=null;
     $q=null;
     $perPage=2;
     $category=null;
@@ -244,9 +258,9 @@ Route::get('/dashboard', function (Request $request) {
 
 
     /* -----API REQUEST WITH NEWSAPI CLIENT----- */
-    $your_api_key='31aabde5da1243ce9e147be782a99d9d';
+    $your_api_key='5d3f7a63232944ecb667668cd827ae18';
     $newsapi = new NewsApi($your_api_key);
-    $url = str_replace(['?page=' . $page, '&page=' . $page], '', url()->current());
+    $url = url()->current();
     $newsTop=$newsapi->getTopHeadlines($q, null, $country, $category, $perPage, $page);
     /* $newsEverything=$newsapi->getEverything('bitcoin', null, null, null, null, null, null, null, 5, null); */
 
@@ -255,14 +269,15 @@ Route::get('/dashboard', function (Request $request) {
 
     /* -----FUNCIONALITY FOR MATCHING URLS FOR FAVOURITES USED TO HIDE THE ADD TO FAVOURITE BUTTON AND SHOW STAR----- */
     $arrayOfMatchedUrls=[];
-    $allFavourites=Favourite::all()->where('user_id', 'like', auth()->user()->id)->toArray();
-    for($y=0;$y<count($allFavourites);$y++){
-        for($x=0;$x<$perPage;$x++){
-            if($newsTop->articles[$x]->url==$allFavourites[$y]['url']){
-                $arrayOfMatchedUrls[$allFavourites[$y]['url']]=$newsTop->articles[$x]->url;
+    $allFavourites=User::with('favourites')->where('id', 'like', auth()->user()->id)->get();
+    for($y=0;$y<count($allFavourites[0]['favourites']);$y++){
+        for($x=0;$x<count($newsTop->articles);$x++){
+            if($newsTop->articles[$x]->url==$allFavourites[0]['favourites'][$y]['url']){
+                $arrayOfMatchedUrls[$allFavourites[0]['favourites'][$y]['url']]=$newsTop->articles[$x]->url;
             }
         }
     }
+
 
     /* -----NUMBER OF PAGES CALCULATION FOR PAGINATION----- */
     $numberOfPages=$newsTop->totalResults/$perPage;
@@ -285,6 +300,52 @@ Route::get('/dashboard', function (Request $request) {
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+/* FAVORITES */
+Route::get('/favorites', function (Request $request) {
+
+    /* -----GET ALL THE COMMENTS THAT WILL BE SHOWN ON THE VIEW----- */
+    $comments=Comment::with('user')->get();
+
+    /* -----EXTRACTING THE QUERY PARAMETERS FROM URL----- */
+    extract($request->all());
+
+    /* -----INITIALIZING THE QUERY PARAMETERS----- */
+    $page=null;
+
+    /* -----IF THERE ARE QUERY PARAMETERS OVERWRITE INITIAL VALUE WITH VALUE EXTRACTED FROM URL----- */
+    if(extract($request->all())){
+        $page = $page;
+    }
+
+    /* -----GET USERS FAVOURITE NEWS THAT WILL BE SHOWN ON THE PAGE----- */
+    $url = url()->current();
+    $paginationRule=2;
+    $favoritesAll=Favourite::where('user_id', 'like', auth()->user()->id)->get();
+    $favourites=Favourite::where('user_id', 'like', auth()->user()->id)->paginate($paginationRule);
+
+
+    /* -----NUMBER OF PAGES CALCULATION FOR PAGINATION----- */
+    $numberOfPages=count($favoritesAll)/$paginationRule;
+    $numberOfPages=ceil($numberOfPages);
+
+    if($page>$numberOfPages)
+    {
+        $page=$page-1;
+        return redirect('/favorites?page=' . $page);
+    }
+    /* -----RETURNING VIEW WITH ALL VARIABLES NEEDED----- */
+    return view('favorites', [
+        'numberOfPages'=>$numberOfPages,
+        'favourites'=>$favourites,
+        'currentPage'=>$page,
+        'url'=>$url,
+        'favourites'=>$favourites,
+        'comments'=>$comments
+        /* 'newsEverything'=>$newsEverything->articles */
+    ]);
+})->middleware(['auth', 'verified'])->name('favorites');
+
+/* AUTH */
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -22,7 +22,7 @@ class ProfileController extends Controller
          ';
         $country_names = json_decode($jsonData, true);
 
-        $your_api_key='31aabde5da1243ce9e147be782a99d9d';
+        $your_api_key='5d3f7a63232944ecb667668cd827ae18';
         $newsapi = new NewsApi($your_api_key);
         $countriesAll = $newsapi->getCountries();
         for($x=0;$x<count($countriesAll);$x++){

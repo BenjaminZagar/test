@@ -18,8 +18,13 @@
             <div class="bg-gray-100 rounded-lg mb-6 shadow-md p-2">
                 <div class="flex flex-wrap justify-center">
                     @foreach ($categoriesAll as $categoryAll)
+                    @if($categoryAll==$category)
                         <a href="/dashboard?category={{ $categoryAll }}"
+                            class="m-2 text-2xl text-blue-500 hover:underline">{{ strtoupper($categoryAll) }}</a>
+                    @else
+                    <a href="/dashboard?category={{ $categoryAll }}"
                             class="m-2 text-2xl text-black hover:underline">{{ strtoupper($categoryAll) }}</a>
+                    @endif
                     @endforeach
                 </div>
             </div>
@@ -45,11 +50,6 @@
                                 <p class="text-gray-700">By {{ $newTop->author ?? 'Unknown author' }}</p>
                                 {{-- HERE IS USED FUNCTIONALITY OF MATCHING URLS. IT WILL HIDE THE ADD TO FAVOURITE BUTTON --}}
                                 @if (array_search($newTop->url, $array))
-                                    {{-- <svg class="mt-4 h-6 w-6 text-yellow-400 fill-current"
-                                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                        <path
-                                            d="M10 0l2.476 7.604H20l-6.327 4.602 2.476 7.604L10 15.209 3.851 20l2.476-7.604L0 7.604h7.524L10 0z" />
-                                    </svg> --}}
                                     <div class="text-gray-500"  style="font-size:15px;"><span class="mt-5 font-xl fa fa-star checked text-yellow-400">&#160&#160</span> Added to favourites</div>
                                 @else
                                     <form method="POST" action="/dashboard/favourite/create">
@@ -71,46 +71,21 @@
                                         </button>
                                     </form>
                                 @endif
-                                {{-- @foreach ($favourites as $favourite)
-                        @if ($favourite->url == $newTop->url)
-                        <p>BRAVO</p>
-                        @endif
-                        @endforeach --}}
-
-
 
                                 <div class="mt-5">
-                                    {{-- <h3 class="text-lg font-semibold mb-4">Add comment</h3> --}}
-                                    <form class="mb-4" method="POST" action="/dashboard/comments/create">
-                                        @csrf
-                                       {{--  <div class="flex flex-col mb-4">
-                                            <label for="name" class="text-gray-600">Name</label>s
-                                            <input type="text" name="name" id="name" placeholder="Your name"
-                                                class="rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                                        </div> --}}
-                                        <div class="flex flex-col mb-4">
-                                            {{-- <label for="comment" class="text-gray-600">Comment</label> --}}
-                                            <textarea name="comment_text" id="comment_text" rows="1" placeholder="Leave your comment here"
-                                                class="rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
-                                        </div>
-                                        <input type="hidden" id="user_id" name="user_id"
-                                            value={{ auth()->user()->id }}>
+                                    <div class="mt-5">
+                                        <form class="mb-4 flex flex-row" method="POST" action="/dashboard/comments/create">
+                                            @csrf
+                                            <div class="flex flex-col mr-2 w-full">
+                                                <textarea name="comment_text" id="comment_text" rows="1" placeholder="Leave your comment here"
+                                                          class="rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
+                                            </div>
+                                            <input type="hidden" id="user_id" name="user_id" value={{ auth()->user()->id }}>
                                             <input type="hidden" id="url" name="url" value="{{ $newTop->url }}">
-                                        <button type="submit"
-                                            class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Submit</button>
-                                    </form>
-                                    <!-- Comment section header -->
-                                    <div class="flex items-center justify-between">
-
-                                        <button class="text-gray-600 hover:text-gray-800"
-                                            id="expand-comments-btn-{{ $index }}">
-                                            <i class="fas fa-chevron-down mr-2"></i>
-                                            <span>Show more</span>
-                                        </button>
+                                            <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Submit</button>
+                                        </form>
                                     </div>
 
-                                   {{-- NAPRAVITI U TABLICI --}}
-                                    <!-- Comment section body -->
                                     <div class="mt-4 max-h-0 overflow-hidden transition-all duration-500 ease-in-out"
                                         id="comments-section-{{ $index }}">
                                         <!-- Comment 1 -->
@@ -120,17 +95,39 @@
                                         @endphp
                                         @foreach($comments as $comment)
                                         @if ($comment->url == $newTop->url)
-                                        <div class="bg-gray-100 rounded-lg shadow-md p-4 mb-4">
+                                        @if ($comment->user_id == auth()->user()->id)
+                                        <div class="bg-blue-500 rounded-lg shadow-md p-4 mb-4 flex">
+                                            <div>
+                                                <h4 class="text-lg font-medium text-white">{{$comment->user->name}}</h4>
+                                                <p class="text-white">{{$comment->comment_text}}</p>
+                                            </div>
+                                            <div class="ml-auto">
+                                                <form method="POST" action="/dashboard/comments/{{$comment->id}}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="flex items-center justify-center mt-4 px-4 py-2 text-gray-600 rounded-lg">
+                                                        <i class="fa fa-remove text-white"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                        @else
+                                        <div class="bg-gray-200 rounded-lg shadow-md p-4 mb-4">
                                             <h4 class="text-lg font-medium">{{$comment->user->name}}</h4>
                                             <p class="text-gray-600">{{$comment->comment_text}}</p>
                                         </div>
+                                        @endif
                                         @php
                                             $commentCount++;
                                         @endphp
                                         @endif
                                         @endforeach
                                     </div>
-                                    <h3 class="text-lg font-bold mb-5">Comments: {{$commentCount}}</h3>
+                                    <h3 class="text-lg font-bold mb-5 text-gray-600"><button class="text-gray-600 hover:text-gray-800"
+                                        id="expand-comments-btn-{{ $index }}">
+                                        <i class="mr-2"></i>
+                                        <span>Comments:</span>
+                                    </button> {{$commentCount}}</h3>
 
 
                                 </div>
@@ -145,15 +142,16 @@
                                             commentsSection{{ $index }}.style.maxHeight =
                                                 `${commentsSection{{ $index }}.scrollHeight}px`;
                                             expandBtn{{ $index }}.innerHTML =
-                                                `<i class="fas fa-chevron-up mr-2"></i><span>Show less</span>`;
+                                                `<i class="mr-2"></i><span>Comments:</span>`;
                                         } else {
                                             commentsSection{{ $index }}.style.maxHeight = `0px`;
                                             expandBtn{{ $index }}.innerHTML =
-                                                `<i class="fas fa-chevron-down mr-2"></i><span>Show more</span>`;
+                                                `<i class="mr-2"></i><span>Comments:</span>`;
                                         }
                                         isExpanded{{ $index }} = !isExpanded{{ $index }};
                                     });
                                 </script>
+
                         @endforeach
 
                         @if ($numberOfPages > 1)
